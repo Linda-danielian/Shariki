@@ -1,0 +1,103 @@
+import pygame
+import math
+import numpy as np
+from pygame.draw import *
+from random import randint
+pygame.init()
+
+FPS = 1000
+screen = pygame.display.set_mode((1200, 700))
+score = 0
+clock = pygame.time.Clock()
+num=5
+
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
+GREEN = (0, 255, 0)
+MAGENTA = (255, 0, 255)
+CYAN = (0, 255, 255)
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN, WHITE]
+
+font_name = pygame.font.match_font('arial')
+
+def draw_text(surf, text, size, x, y):
+    font = pygame.font.Font(font_name, size)
+    text_surface = font.render(text, True, WHITE)
+    text_rect = text_surface.get_rect()
+    text_rect.midtop = (x, y)
+    surf.blit(text_surface, text_rect)
+
+def new_random_ball():
+    global x, y, r, vx, vy, color
+    x=[randint(100,700) for i in range(num)]    
+    y=[randint(100,500) for i in range(num)]
+    r=[randint(30,50) for i in range(num)]
+    vx=[randint(-500,500) for i in range(num)]
+    vy=[randint(-500,500) for i in range(num)]
+    color = [randint(0,5) for i in range(num)]
+def new_random_sq():
+    global x_r, y_r, r_r, vx_r, vy_r, color_r
+    x_r=[randint(100,700) for i in range(num)]    
+    y_r=[randint(100,500) for i in range(num)]
+    r_r=[randint(30,50) for i in range(num)]
+    vx_r=[randint(-500,500) for i in range(num)]
+    vy_r=[randint(-500,500) for i in range(num)]
+    color_r = [randint(0,5) for i in range(num)]
+
+
+pygame.display.update()
+clock = pygame.time.Clock()
+finished = False
+
+new_random_ball()
+new_random_sq()
+while not finished:
+    dt = clock.tick(FPS)/1000
+    for i in range(num):
+        x_r[i]+= vx_r[i] * dt #*(np.cos(randint(0, 6)))*5
+        y_r[i]+= vy_r[i] * dt #*(np.sin(randint(0, 6)))*5
+        x[i]+= vx[i] * dt
+        y[i]+= vy[i] * dt
+        if (x_r[i]>=1200):
+            x_r[i]=1
+        if (x_r[i]<=0):
+            x_r[i]=1199
+        if (y_r[i]>=700):
+            y_r[i]=1
+        if (y_r[i]<=0):
+            y_r[i]=699
+        if (x[i] >=1200-r[i]) or (x[i]<=0+r[i]):
+            vx[i]*=-1
+        if (y[i] >=700-r[i]) or (y[i]<=0+r[i]):
+            vy[i]*=-1
+        draw_text(screen, str(score), 18, 600, 10)
+       
+        pygame.draw.rect(screen, (COLORS[color_r[i]]), (x_r[i], y_r[i], r_r[i], r_r[i]))
+        pygame.draw.circle(screen, (COLORS[color[i]]), (int(x[i]), int(y[i])), int(r[i]))
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                finished = True
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                event.x, event.y = event.pos
+                for j in range(num):
+                    d=[0]*num
+                    d[j]=math.sqrt(((x[j]-event.x)**2)+((y[j]-event.y)**2))
+           
+                    if d[j]<=r[i]:
+                        score+=10
+                        new_random_ball()
+                for k in range(num):
+                    if (x_r[k]+r_r[k]>=event.x) and (y_r[k]+r_r[k]>=event.y) and (y_r[k]<=event.y) and (x_r[k]<=event.x):
+                        score+=15
+                        new_random_sq()   
+                
+    
+    pygame.display.flip()    
+    screen.fill((0, 0, 0))
+
+
+pygame.quit()
